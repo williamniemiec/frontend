@@ -1,18 +1,18 @@
 'use client';
 
-import { CategoryFilter } from '@/components/CategoryFilter';
-import { PostList } from '@/components/PostList';
+import { CategoryFilter } from '@/pages/category/components/CategoryFilter';
+import { PostList } from '@/pages/category/components/PostList';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { HamburgerButton } from '@/components/ui/HamburgerButton';
-import { useSelectedCategory } from '@/hooks/useSelectedCategory';
+import { useSelectedCategory } from '@/pages/category/hooks/useSelectedCategory';
 import { useScreenSize } from '@/hooks/useScreenSize';
-import { usePosts } from '@/hooks/usePosts';
+import { usePosts } from '@/pages/category/hooks/usePosts';
 import { updateCategoryFavorite } from '@/services/posts';
-import { getStoredCategory } from '@/lib/utils/localStorage';
 import { Category } from '@/types/Category';
 import { Post } from '@/types/Post';
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
 
 interface HomeScreenClientProps {
   readonly initialCategories: Category[];
@@ -25,8 +25,9 @@ export default function HomeScreenClient({
   initialSelectedCategory: propSelectedCategory,
   initialPosts,
 }: HomeScreenClientProps) {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [selectedCategory, setSelectedCategory, isCategoryInitialized] = useSelectedCategory(propSelectedCategory);
+  const [selectedCategory, , isCategoryInitialized] = useSelectedCategory(propSelectedCategory);
   const [filterMode, setFilterMode] = useState<'all' | 'favorites'>('all');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isSmallScreen, isHydrated } = useScreenSize();
@@ -35,17 +36,6 @@ export default function HomeScreenClient({
     initialPosts,
     propSelectedCategory
   );
-
-  useEffect(() => {
-    if (categories.length > 0 && !selectedCategory) {
-      const categoryToSelect = propSelectedCategory || getStoredCategory();
-      if (categoryToSelect && categories.some(cat => cat.id === categoryToSelect)) {
-        setSelectedCategory(categoryToSelect);
-      } else {
-        setSelectedCategory(categories[0].id);
-      }
-    }
-  }, [categories, selectedCategory, setSelectedCategory, propSelectedCategory]);
 
   const handleToggleFavorite = async (categoryId: string) => {
     const category = categories.find(cat => cat.id === categoryId);
@@ -64,7 +54,9 @@ export default function HomeScreenClient({
   };
 
   const handleCategorySelect = (categoryId: string | null) => {
-    setSelectedCategory(categoryId);
+    if (categoryId) {
+      router.push(`/category/${categoryId}`);
+    }
     if (isSmallScreen) {
       setIsMenuOpen(false);
     }

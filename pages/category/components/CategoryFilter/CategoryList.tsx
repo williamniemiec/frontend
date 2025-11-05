@@ -24,11 +24,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({
         name={category.name}
         isActive={selectedCategory === category.id}
         isFavorite={category.favorite}
-        onPress={() =>
-          onCategorySelect(
-            selectedCategory === category.id ? null : category.id
-          )
-        }
+        onPress={() => onCategorySelect(category.id)}
         onToggleFavorite={() => onToggleFavorite(category.id)}
       />
     ))}
